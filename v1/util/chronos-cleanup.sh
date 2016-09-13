@@ -2,7 +2,14 @@
 
 CHRONOS_URL="http://localhost"
 CHRONOS_PORT="4400"
-ALL_JOBS="$(curl -L -X GET ${CHRONOS_URL}:${CHRONOS_PORT}/scheduler/jobs | jq -r '.[] | [ .schedule, .name ]| join(",")' )"
+CHRONOS_USERNAME="$(etcdctl get /chronos/config/username)"
+CHRONOS_PASSWORD="$(etcdctl get /chronos/config/password)"
+if [[ "$CHRONOS_USERNAME" != "" && "$CHRONOS_PASSWORD" != "" ]]; then
+  $CHRONOS_AUTH="-u ${CHRONOS_USERNAME}:${CHRONOS_PASSWORD}"
+else
+  $CHRONOS_AUTH=""
+fi
+ALL_JOBS="$(curl ${CHRONOS_AUTH} -L -X GET ${CHRONOS_URL}:${CHRONOS_PORT}/scheduler/jobs | jq -r '.[] | [ .schedule, .name ]| join(",")' )"
 OLD_JOBS="$(echo "$ALL_JOBS" | grep '^R0/')"
 OLD_JOB_NAMES="$( echo "$OLD_JOBS" | awk -F ',' '{print $2}' )"
 if [[ "$OLD_JOB_NAMES" != "" ]] ; then
