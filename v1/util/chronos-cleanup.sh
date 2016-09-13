@@ -6,9 +6,9 @@ CHRONOS_USERNAME="$(etcdctl get /chronos/config/username)"
 CHRONOS_PASSWORD="$(etcdctl get /chronos/config/password)"
 SUMO_FILTER="APP_NAME='chronos-cleanup'"
 if [[ "$CHRONOS_USERNAME" != "" && "$CHRONOS_PASSWORD" != "" ]]; then
-  $CHRONOS_AUTH="-u ${CHRONOS_USERNAME}:${CHRONOS_PASSWORD}"
+  CHRONOS_AUTH="-u ${CHRONOS_USERNAME}:${CHRONOS_PASSWORD}"
 else
-  $CHRONOS_AUTH=""
+  CHRONOS_AUTH=""
 fi
 ALL_JOBS="$(curl ${CHRONOS_AUTH} -L -X GET ${CHRONOS_URL}:${CHRONOS_PORT}/scheduler/jobs | jq -r '.[] | [ .schedule, .name ]| join(",")' )"
 OLD_JOBS="$(echo "$ALL_JOBS" | grep '^R0/')"
