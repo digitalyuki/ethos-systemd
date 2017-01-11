@@ -6,12 +6,15 @@ After=docker.service fleet.service bootstrap.service
 [Service]
 EnvironmentFile=/etc/environment
 Environment="GITDIR=/home/core/ethos-systemd"
-Environment="FORK=/home/core/ethos-systemd/v1/lib/etcdauth.sh get /environment/SCRIPTS-FORK"
-Environment="SHA=/home/core/ethos-systemd/v1/lib/etcdauth.sh get /environment/SCRIPTS-SHA"
+Environment="ETCDAUTH_RUN_FILE=/home/core/etcdauth.sh"
+Environment="ETCDAUTH_SRC_FILE=/home/core/ethos-systemd/v1/lib/etcdauth.sh"
+Environment="FORK=/home/core/etcdauth.sh get /environment/SCRIPTS-FORK"
+Environment="SHA=/home/core/etcdauth.sh get /environment/SCRIPTS-SHA"
 User=core
 Type=oneshot
 RemainAfterExit=false
 
+ExecStartPre=-/usr/bin/cp $ETCDAUTH_SRC_FILE $ETCDAUTH_RUN_FILE
 ExecStartPre=-/usr/bin/rm -rf $GITDIR
 # sourcing etcdctl is for non-control nodes only.
 # TODO: maybe enable etcd for all nodes?
@@ -23,7 +26,7 @@ ExecStart=/usr/bin/bash -c "\
   cd $GITDIR && git checkout $($SHA)"
 
 ExecStart=/usr/bin/sudo bash $GITDIR/v1/util/setup-credentials.sh
-
+ExecStopPost=/usr/bin/rm $ETCDAUTH_RUN_FILE
 [Install]
 WantedBy=multi-user.target
 
